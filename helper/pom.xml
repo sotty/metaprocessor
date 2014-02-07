@@ -27,9 +27,10 @@
 			<version>1.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>metaprocessor</groupId>
-			<artifactId>helper_annotations_processor</artifactId>
+	<artifactId>helper_annotations_processors</artifactId>
 			<version>1.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
