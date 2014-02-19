@@ -11,7 +11,6 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
@@ -25,7 +24,7 @@ public class PrintMeAnnotationProcessor extends AbstractProcessor {
 			RoundEnvironment env) {
 
 		Messager messager = processingEnv.getMessager();
-		messager.printMessage(Diagnostic.Kind.ERROR,
+		messager.printMessage(Diagnostic.Kind.NOTE,
 				"Starting annotation processing.");
 		for (TypeElement te : annotations) {
 			for (Element e : env.getElementsAnnotatedWith(te)) {
@@ -41,6 +40,7 @@ public class PrintMeAnnotationProcessor extends AbstractProcessor {
 
 						Writer writer = jfo.openWriter();
 						new MetaCodeGenerator().generateCode(writer, classElement);
+						writer.flush();
 						writer.close();
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block

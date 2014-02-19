@@ -12,7 +12,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jsr269.generated.dir>target/generated</jsr269.generated.dir>
+		<jsr269.generated.dir>target/metamodel</jsr269.generated.dir>
 	</properties>
 
 	<dependencies>
@@ -43,9 +43,11 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.5.1</version>
 				<configuration>
-					<verbose>true</verbose>
+					<source>1.6</source>
+					<target>1.6</target>
 					<compilerArgument>-proc:none</compilerArgument>
 				</configuration>
+				
 			</plugin>
 
 			<plugin>
@@ -66,6 +68,7 @@
 						<phase>generate-sources</phase>
 					</execution>
 				</executions>
+				
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
