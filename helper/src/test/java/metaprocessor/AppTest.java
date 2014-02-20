@@ -32,11 +32,11 @@ public class AppTest extends TestCase {
 	 * @throws SecurityException
 	 */
 	public void testApp() throws SecurityException, ClassNotFoundException {
-		assertEquals(1, Class.forName("metaprocessor.PrintMeAP_Test_")
+		assertEquals(1, Class.forName("metaprocessor.Person_")
 				.getDeclaredMethods().length);
 		System.out
 				.println("The generated class has only one method, with name: "
-						+ Class.forName("metaprocessor.PrintMeAP_Test_")
+						+ Class.forName("metaprocessor.Person_")
 								.getDeclaredMethods()[0].getName());
 	}
 }
