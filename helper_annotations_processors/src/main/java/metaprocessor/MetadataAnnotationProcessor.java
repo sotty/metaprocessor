@@ -17,12 +17,12 @@ import javax.tools.JavaFileObject;
 
 import metaprocessor.codegenerator.MetaCodeGenerator;
 
-@SupportedAnnotationTypes({ "metaprocessor.annotations.PrintMe" })
-public class PrintMeAnnotationProcessor extends AbstractProcessor {
+@SupportedAnnotationTypes({ "metaprocessor.annotations.Metadata" })
+public class MetadataAnnotationProcessor extends AbstractProcessor {
 
 	public boolean process(Set<? extends TypeElement> annotations,
 			RoundEnvironment env) {
-
+  
 		Messager messager = processingEnv.getMessager();
 		messager.printMessage(Diagnostic.Kind.NOTE,
 				"Starting annotation processing.");
@@ -43,7 +43,6 @@ public class PrintMeAnnotationProcessor extends AbstractProcessor {
 						writer.flush();
 						writer.close();
 					} catch (IOException e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
 
