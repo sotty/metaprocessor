@@ -1,0 +1,35 @@
+# Please keep in mind:
+# - If you need to ignore files on your local machine only, please use .git/info/exclude instead .gitignore
+# - Project specified ignore rules must be located in project directory only
+
+# Eclipse project files
+.settings
+.classpath
+.project
+.metadata
+.mymetadata
+.springBeans
+
+# IntelliJ Idea project files
+.idea
+*.iml
+*.ipr
+*.iws
+
+# Always ignore these directories/files
+target
+logs
+bin
+
+# GWT and Errai specific folders
+.errai
+gwt-unitCache
+src/main/webapp/.errai
+src/main/webapp/app
+src/main/webapp/WEB-INF/classes
+src/main/webapp/WEB-INF/deploy
+src/main/webapp/WEB-INF/lib
+app.launch
+
+# JRebel files
+*rebel*.xml
