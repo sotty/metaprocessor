@@ -18,7 +18,10 @@ public class MetaCodeGenerator {
 	     bw.append(";");
 	     bw.newLine();
 	     bw.newLine();
-	     bw.append("public class " + classElement.getSimpleName() + "_ " + "{");
+	     bw.append("import metaprocessor.helper.MetadataContainer;");
+	     bw.newLine();
+	     bw.newLine();
+	     bw.append("public class " + classElement.getSimpleName() + "_ " + "extends MetadataContainer{");
 	     bw.newLine();
 	     bw.append("public boolean test() {");
 	     bw.newLine();
