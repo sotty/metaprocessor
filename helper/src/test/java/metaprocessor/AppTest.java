@@ -1,5 +1,7 @@
 package metaprocessor;
 
+import java.lang.reflect.Method;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -30,13 +32,18 @@ public class AppTest extends TestCase {
 	 * 
 	 * @throws ClassNotFoundException
 	 * @throws SecurityException
+	 * @throws NoSuchMethodException
 	 */
-	public void testApp() throws SecurityException, ClassNotFoundException {
+	public void testApp() throws Exception {
 		assertEquals(1, Class.forName("metaprocessor.Person_")
 				.getDeclaredMethods().length);
 		System.out
 				.println("The generated class has only one method, with name: "
 						+ Class.forName("metaprocessor.Person_")
 								.getDeclaredMethods()[0].getName());
+		Method method = Class.forName("metaprocessor.Person_").getMethod(
+				"getMetadata", Person.class);
+		Object ret = method.invoke(null, new Person());
+		System.out.println(ret);
 	}
 }

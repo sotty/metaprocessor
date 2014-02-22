@@ -2,18 +2,21 @@ package metaprocessor.helper;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.List;
 
 
 
 
-public class MetadataContainer {
+public class MetadataContainer<T> {
 
-	ArrayList<Double> degreeArray;
-	ArrayList<Boolean> isSetArray;
-	ArrayList<Class<?>> typeArray;
-	ArrayList<String> positionArray;
+	protected T original;
+	List<Double> degreeArray = new ArrayList<Double>();
+	List<Boolean> isSetArray = new ArrayList<Boolean>();
+	List<Class<?>> typeArray = new ArrayList<Class<?>>();
+	List<String> positionArray = new ArrayList<String>();
 	
-	public MetadataContainer(Object metadatableObject) {
+	public MetadataContainer(T metadatableObject) {
+		this.original = metadatableObject;
 		for (Field field : metadatableObject.getClass().getDeclaredFields()) {
 			positionArray.add(field.getName());
 			typeArray.add(field.getClass());
@@ -21,7 +24,6 @@ public class MetadataContainer {
 	}
 	
 	public MetadataContainer() {
-		// TODO Auto-generated constructor stub
 	}
 	
 	public Double getDegree(String property){
