@@ -43,7 +43,8 @@ public class AppTest extends TestCase {
 								.getDeclaredMethods()[0].getName());
 		Method method = Class.forName("metaprocessor.Person_").getMethod(
 				"getMetadata", Person.class);
-		Object ret = method.invoke(null, new Person());
+		Person_ ret = (Person_)method.invoke(null, new Person());
+		ret.setIsSet("name", true);
 		System.out.println(ret);
 	}
 }
