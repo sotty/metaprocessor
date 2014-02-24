@@ -37,14 +37,8 @@ public class AppTest extends TestCase {
 	public void testApp() throws Exception {
 		assertEquals(1, Class.forName("metaprocessor.Person_")
 				.getDeclaredMethods().length);
-		System.out
-				.println("The generated class has only one method, with name: "
-						+ Class.forName("metaprocessor.Person_")
-								.getDeclaredMethods()[0].getName());
-		Method method = Class.forName("metaprocessor.Person_").getMethod(
-				"getMetadata", Person.class);
-		Person_ ret = (Person_)method.invoke(null, new Person());
+		Person_ ret = (Person_) new Person().getMetadata();
 		ret.setIsSet("name", true);
-		System.out.println(ret);
+		System.out.println(ret.getIsSet("name"));
 	}
 }

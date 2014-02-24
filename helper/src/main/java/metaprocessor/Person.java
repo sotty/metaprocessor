@@ -1,9 +1,10 @@
 package metaprocessor;
 
 import metaprocessor.annotations.Metadata;
+import metaprocessor.helper.MetadataContainer;
 
 @Metadata
-public class Person {
+public class Person implements Metadatable<Person>{
 
 	private String name;
 
@@ -23,5 +24,10 @@ public class Person {
 
 	public String getName() {
 		return name;
+	}
+	
+	@Override
+	public MetadataContainer<Person> getMetadata() {
+		return new Person_(this);
 	}
 }
