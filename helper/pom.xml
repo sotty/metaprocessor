@@ -2,7 +2,14 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>metaprocessor</groupId>
+  <parent>
+    <groupId>metaprocessor</groupId>
+    <artifactId>parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
+
+  <groupId>metaprocessor</groupId>
 	<artifactId>helper</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
@@ -12,51 +19,35 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jsr269.generated.dir>target/metamodel</jsr269.generated.dir>
+		<jsr269.generated.dir>target/generated-sources</jsr269.generated.dir>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>3.8.1</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>metaprocessor</groupId>
 			<artifactId>helper_annotations</artifactId>
 			<version>1.0-SNAPSHOT</version>
-			<scope>compile</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>metaprocessor</groupId>
 			<artifactId>helper_annotations_processors</artifactId>
 			<version>1.0-SNAPSHOT</version>
-			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.5.1</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-					<compilerArgument>-proc:none</compilerArgument>
-				</configuration>
-				
-			</plugin>
 
 			<plugin>
 				<groupId>org.bsc.maven</groupId>
 				<artifactId>maven-processor-plugin</artifactId>
 				<version>2.2.4</version>
 				<configuration>
-					<!-- source output directory -->
-					<verbose>true</verbose>
 					<outputDirectory>${jsr269.generated.dir}</outputDirectory>
 				</configuration>
 				<executions>
@@ -68,8 +59,8 @@
 						<phase>generate-sources</phase>
 					</execution>
 				</executions>
-				
 			</plugin>
+
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
@@ -90,12 +81,16 @@
 				</executions>
 			</plugin>
 		</plugins>
+
 		<resources>
 			<resource>
 				<directory>src/main/java</directory>
 			</resource>
-			<resource><directory>target/metamodel</directory></resource>
+			<resource>
+        <directory>target/generated-sources</directory>
+      </resource>
 		</resources>
+
 	</build>
 
 </project>

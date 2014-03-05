@@ -1,0 +1,64 @@
+package @{ packageQName };
+
+import metaprocessor.helper.PropertyLiteral;
+import metaprocessor.helper.MetadataContainer;
+import @{ classCoreQName };
+
+public class @{ mclassName } extends MetadataContainer<@{ classCoreName }> {
+
+        public static class @{ mclassName }Modify extends Modify<@{ classCoreName }> {
+
+            public @{ mclassName }Modify( @{ classCoreName } x ) {
+                super( x );
+            }
+
+            @foreach{ prop : properties }
+            public @{ mclassName }Modify @{ prop.name }( @{ prop.type } new@{ capitalize( prop.name ) } ) {
+                addTask( new ModifyTask<@{ classCoreName }, @{ box( prop.type ) }>( @{ prop.name }, new@{ capitalize( prop.name ) } ) );
+                return this;
+            }
+            @end{}
+
+        }
+
+
+    @foreach{ prop : properties }
+        public static final PropertyLiteral<@{ classCoreName }, @{ box( prop.type ) }> @{ prop.name }
+            = new PropertyLiteral<@{ classCoreName }, @{ box( prop.type ) }>( @{ prop.index }, "@{ prop.name }", "java:" + @{ classCoreQName }.class.getName() + "#" + "@{ prop.name }" ) {
+                public @{ box( prop.type ) } get( @{ classCoreQName } o ) { return o.@{ getter( prop.name, prop.type ) }(); }
+                public void set( @{ classCoreQName } o, @{ box( prop.type ) } value ) { o.@{ setter( prop.name ) }( value ); }
+            };
+    @end{}
+
+    {
+        properties = new PropertyLiteral[] { @foreach{ prop : properties } @{ prop.name } @end{ ', ' } };
+    }
+
+    public @{ mclassName }( @{ classCoreName } target ) {
+        super( target, @{ properties.size() } );
+    }
+
+    public @{ mclassName }Modify modify( @{ classCoreName } x ) {
+        return new @{ mclassName }Modify( x );
+    }
+
+    public static @{ mclassName } getMeta( @{ classCoreName } x ) {
+        return x.getMetadata();
+    }
+
+
+    public static @{ classCoreName } newInstance() {
+        return new @{ classCoreName }();
+    }
+
+    public static @{ classCoreName } newInstance( @foreach{ prop : properties } @{ prop.type } x_@{ prop.name } @end{ ', ' } ) {
+        @{ classCoreName } x = new @{ classCoreName }();
+
+        @foreach{ prop : properties }
+            @{ prop.name }.set( x, x_@{ prop.name } );
+        @end{}
+
+        return x;
+    }
+}
+

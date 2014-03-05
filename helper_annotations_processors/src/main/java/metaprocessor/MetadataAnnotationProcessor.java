@@ -11,10 +11,12 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
+import metaprocessor.annotations.Metadata;
 import metaprocessor.codegenerator.MetaCodeGenerator;
 
 @SupportedAnnotationTypes({ "metaprocessor.annotations.Metadata" })
@@ -24,22 +26,29 @@ public class MetadataAnnotationProcessor extends AbstractProcessor {
 			RoundEnvironment env) {
   
 		Messager messager = processingEnv.getMessager();
-		messager.printMessage(Diagnostic.Kind.NOTE,
-				"Starting annotation processing.");
-		for (TypeElement te : annotations) {
-			for (Element e : env.getElementsAnnotatedWith(te)) {
-				messager.printMessage(Diagnostic.Kind.NOTE,
-						"Printing: " + e.toString());
-				if (e.getKind() == ElementKind.CLASS) {
+		messager.printMessage( Diagnostic.Kind.NOTE, "Starting annotation processing." );
+
+		for ( TypeElement te : annotations ) {
+
+			for (Element e : env.getElementsAnnotatedWith( te ) ) {
+				messager.printMessage(Diagnostic.Kind.NOTE, "Printing: " + e.toString());
+
+                if ( e.getKind() == ElementKind.CLASS ) {
 					TypeElement classElement = (TypeElement) e;
 					
 					JavaFileObject jfo;
 					try {
-						jfo = processingEnv.getFiler().createSourceFile(
-								classElement.getQualifiedName() + "_");
+                        Metadata meta = classElement.getAnnotation( Metadata.class );
+                        String metaClassName = (( PackageElement) classElement.getEnclosingElement() ).getQualifiedName() +
+                                               "." +
+                                               meta.prefix() +
+                                               classElement.getSimpleName() +
+                                               meta.suffix();
+
+						jfo = processingEnv.getFiler().createSourceFile( metaClassName );
 
 						Writer writer = jfo.openWriter();
-						new MetaCodeGenerator().generateCode(writer, classElement);
+						new MetaCodeGenerator().generateCode( writer, classElement );
 						writer.flush();
 						writer.close();
 					} catch (IOException e1) {
@@ -48,6 +57,7 @@ public class MetadataAnnotationProcessor extends AbstractProcessor {
 
 				}
 			}
+
 		}
 		return true;
 	}
