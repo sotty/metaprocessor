@@ -24,14 +24,15 @@ public class MetadataAnnotationProcessor extends AbstractProcessor {
 
 	public boolean process(Set<? extends TypeElement> annotations,
 			RoundEnvironment env) {
-  
+
+
 		Messager messager = processingEnv.getMessager();
 		messager.printMessage( Diagnostic.Kind.NOTE, "Starting annotation processing." );
 
 		for ( TypeElement te : annotations ) {
 
 			for (Element e : env.getElementsAnnotatedWith( te ) ) {
-				messager.printMessage(Diagnostic.Kind.NOTE, "Printing: " + e.toString());
+				messager.printMessage( Diagnostic.Kind.NOTE, "Printing: " + e.toString() );
 
                 if ( e.getKind() == ElementKind.CLASS ) {
 					TypeElement classElement = (TypeElement) e;

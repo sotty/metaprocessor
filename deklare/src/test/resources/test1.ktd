@@ -1,0 +1,73 @@
+@InheritanceModel( InheritanceMode.FLAT )
+package org.kie.test;
+
+import java.lang.String;
+import java.util.Date;
+import org.drools.factmodel.traits.Trait;
+
+@Getter
+@Setter
+@Equality( byIdentity=false, include=Fields.ALL_INHERITED )
+@Meta
+type Living {
+    boolean alive;
+}
+
+@Type( asInterface=true, asClass=true )
+@ToString
+@Equality( byIdentity=true )
+type Human {
+    @Getter
+    @Setter
+    Date dob;
+}
+
+@Trait( logical = true, foo = { "a", "b" } )
+@Type( asClass=true, asInterface=true )
+@Event( timestamp="date" )
+@ToString( include=Fields.KEYS )
+@Equality( byIdentity=false, include=Fields.KEYS )
+type Person subTypeOf Human, Living {
+
+    @Getter @Setter @Key
+    String name;
+
+    @Getter @Setter @Key
+    int age;
+
+    @Key
+    float foo;
+
+    @Key
+    double dice;
+
+    @Key
+    short notSoLong;
+
+    @Key
+    long looong;
+
+    @Key
+    byte bit;
+
+    @Getter
+    Person friend;
+
+    @Getter @Setter
+    Date date;
+
+    @Key @Getter @Setter
+    String[] stringz;
+
+    @Key
+    double[] doublez;
+
+    @Key
+    byte[] bytez;
+
+    @Key
+    int[] intz;
+
+
+}
+

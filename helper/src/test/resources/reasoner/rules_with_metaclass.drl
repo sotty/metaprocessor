@@ -1,0 +1,31 @@
+package reasoner;
+
+import metaprocessor.*;
+
+declare Pet
+    @propertyReactive
+end
+
+rule Test
+when
+then
+    Pet pet = Pet_.newInstance();
+    insert( pet );
+end
+
+
+rule Pet1
+when
+    $p : Pet( this hasSet Pet_.name )
+then
+
+    Pet_.modify( $p ).name( "rex" ).age( 33 );
+end
+
+
+rule Log
+when
+    $o : Object()
+then
+    System.out.println( ">>" + $o );
+end

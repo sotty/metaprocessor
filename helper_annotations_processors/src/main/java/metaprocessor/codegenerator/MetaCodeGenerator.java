@@ -77,6 +77,8 @@ public class MetaCodeGenerator {
         public String classCoreName;
         public String classCoreQName;
 
+
+
         public List<PropertyContext> properties = new LinkedList<PropertyContext>();
 
         public String getter( String name, String type ) {

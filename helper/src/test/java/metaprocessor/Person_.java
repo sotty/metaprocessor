@@ -62,7 +62,7 @@ public class Person_ extends MetadataContainer<Person> {
         return p;
     }
 
-    public Person_Modify modify( Person p ) {
+    public static Person_Modify modify( Person p ) {
         return new Person_Modify( p );
     }
 

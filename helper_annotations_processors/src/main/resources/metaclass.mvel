@@ -38,7 +38,7 @@ public class @{ mclassName } extends MetadataContainer<@{ classCoreName }> {
         super( target, @{ properties.size() } );
     }
 
-    public @{ mclassName }Modify modify( @{ classCoreName } x ) {
+    public static @{ mclassName }Modify modify( @{ classCoreName } x ) {
         return new @{ mclassName }Modify( x );
     }
 

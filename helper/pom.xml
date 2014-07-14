@@ -38,6 +38,20 @@
 			<artifactId>helper_annotations_processors</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
+
+    <dependency>
+      <groupId>org.drools</groupId>
+      <artifactId>drools-compiler</artifactId>
+      <version>6.1.0-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-api</artifactId>
+      <version>6.1.0-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
+
 	</dependencies>
 
 	<build>

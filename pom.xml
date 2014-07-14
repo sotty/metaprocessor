@@ -12,9 +12,10 @@
 
 
   <modules>
-    <module>helper</module>
+	  <module>helper</module>
     <module>helper_annotations</module>
     <module>helper_annotations_processors</module>
+	  <module>deklare</module>
   </modules>
 
   <dependencyManagement>

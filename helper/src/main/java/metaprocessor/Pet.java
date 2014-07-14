@@ -39,4 +39,35 @@ public class Pet implements Metadatable<Pet> {
     public Pet_ getMetadata() {
         return null;
     }
+
+    @Override
+    public boolean equals( Object o ) {
+        if ( this == o ) return true;
+        if ( o == null || getClass() != o.getClass() ) return false;
+
+        Pet pet = (Pet) o;
+
+        if ( Double.compare( pet.age, age ) != 0 ) return false;
+        if ( name != null ? !name.equals( pet.name ) : pet.name != null ) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result;
+        long temp;
+        result = name != null ? name.hashCode() : 0;
+        temp = Double.doubleToLongBits( age );
+        result = 31 * result + (int) ( temp ^ ( temp >>> 32 ) );
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Pet{" +
+               "name='" + name + '\'' +
+               ", age=" + age +
+               '}';
+    }
 }
