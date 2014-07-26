@@ -30,11 +30,12 @@ public class ToStringProcessor extends ClassAnnotationProcessor<ToString> {
                 .setReturnType( String.class )
                 .setPublic();
 
-        Block<JavaClassSource,MethodSource<JavaClassSource>> body = m.openBody();
-            body.doDeclare().name( "sb" ).type( StringBuilder.class ).initDefault().done();
+        Block<JavaClassSource,MethodSource<JavaClassSource>> body = m.setBody();
+            body.addDeclare().setVariable( "sb", StringBuilder.class ).initDefault();
 
-            body.doInvoke().on( "sb" ).method( "append" )
-                    .args()
+            body.addInvoke().method( "append" )
+                    .on().variableRef( "sb" ).noMore()
+                    .addArgument()
                         .literal( source.getName() + " { " ).noMore()
                 .done();
 
@@ -42,32 +43,32 @@ public class ToStringProcessor extends ClassAnnotationProcessor<ToString> {
             int N = fields.size() - 1;
             for ( int j = 0; j <= N; j++ ) {
                 Field<JavaClassSource> f = fields.get( j );
-                ExpressionFactory<JavaClassSource, OperatorExpression<JavaClassSource, InvokeStatement<JavaClassSource, Block<JavaClassSource, MethodSource<JavaClassSource>>>>> builder = body.doInvoke()
-                        .on( "sb" )
+                ExpressionFactory<JavaClassSource, OperatorExpression<JavaClassSource, InvokeStatement<JavaClassSource, Block<JavaClassSource, MethodSource<JavaClassSource>>>>> builder = body.addInvoke()
+                        .onVariable( "sb" )
                         .method( "append" )
-                        .args()
-                                .operator( "+" ).args()
-                                        .literal( f.getName() ).next()
-                                        .literal( " = " ).next();
+                        .addArgument()
+                                .operator( "+" ).addArgument()
+                                        .literal( f.getName() ).nextArgument()
+                                        .literal( " = " ).nextArgument();
                 if ( f.getType().getArrayDimensions() == 0 ) {
-                    builder .field( f.getName() ).next()
+                    builder .field( f.getName() ).nextArgument()
                             .literal( j < N ? ", " : "" );
                 } else {
                     builder.invoke()
-                                .on().klass( Arrays.class ).noMore()
+                                .on().classLiteral( Arrays.class ).noMore()
                                 .method( "toString" )
-                                .args().field( f.getName() ).noMore().next()
+                                .addArgument().field( f.getName() ).noMore().nextArgument()
                             .literal( j < N ? ", " : "" );
                 }
             }
 
-            body.doInvoke().on( "sb" ).method( "append" )
-                    .args()
+            body.addInvoke().onVariable( "sb" ).method( "append" )
+                    .addArgument()
                         .literal( " } " )
                     .noMore()
                 .done();
 
-            body.doReturn().var( "sb" ).done();
+            body.addReturn().variable( "sb" );
         return target;
     }
 

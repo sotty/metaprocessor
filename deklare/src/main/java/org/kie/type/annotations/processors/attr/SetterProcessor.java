@@ -17,9 +17,9 @@ public class SetterProcessor extends FieldAnnotationProcessor<Setter> {
     protected void processClassField( JavaClassSource source, JavaClassSource target, TypeDescriptor descr, Field<JavaClassSource> field ) {
         target.addMethod()
                 .setPublic()
-                .openBody()
-                    .doAssign().toField( field.getName() ).varExpr( field.getName() ).done()
-                .close()
+                .setBody()
+                    .addAssign().setFieldLeftExpression( field.getName() ).setVariableRightExpression( field.getName() )
+                .closeBlock()
                 .setName( TypeHelper.setter( field.getName(), field.getType().getQualifiedName() ) )
                 .addParameter( TypeHelper.getTypeName( field ), field.getName() );
     }
