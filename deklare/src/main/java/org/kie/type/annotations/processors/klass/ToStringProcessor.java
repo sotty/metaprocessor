@@ -48,16 +48,16 @@ public class ToStringProcessor extends ClassAnnotationProcessor<ToString> {
                         .method( "append" )
                         .addArgument()
                                 .operator( "+" ).addArgument()
-                                        .literal( f.getName() ).nextArgument()
-                                        .literal( " = " ).nextArgument();
+                                        .literal( f.getName() ).addArgument()
+                                        .literal( " = " ).addArgument();
                 if ( f.getType().getArrayDimensions() == 0 ) {
-                    builder .field( f.getName() ).nextArgument()
+                    builder .field( f.getName() ).addArgument()
                             .literal( j < N ? ", " : "" );
                 } else {
                     builder.invoke()
                                 .on().classLiteral( Arrays.class ).noMore()
                                 .method( "toString" )
-                                .addArgument().field( f.getName() ).noMore().nextArgument()
+                                .addArgument().field( f.getName() ).noMore().addArgument()
                             .literal( j < N ? ", " : "" );
                 }
             }

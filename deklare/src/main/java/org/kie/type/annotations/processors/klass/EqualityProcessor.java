@@ -4,6 +4,7 @@ import org.jboss.forge.roaster.model.expressions.Argument;
 import org.jboss.forge.roaster.model.Block;
 import org.jboss.forge.roaster.model.expressions.ExpressionFactory;
 import org.jboss.forge.roaster.model.Field;
+import org.jboss.forge.roaster.model.expressions.OperatorExpression;
 import org.jboss.forge.roaster.model.source.AnnotationSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaEnumSource;
@@ -11,6 +12,7 @@ import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.statements.AssignStatement;
+import org.jboss.forge.roaster.model.statements.BlockStatement;
 import org.kie.type.annotations.Equality;
 import org.kie.type.annotations.Fields;
 import org.kie.type.annotations.Key;
@@ -20,6 +22,9 @@ import org.kie.type.model.TypeDescriptor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.jboss.forge.roaster.model.statements.Statements.*;
+import static org.jboss.forge.roaster.model.expressions.Expressions.*;
 
 public class EqualityProcessor extends ClassAnnotationProcessor<Equality> {
 
@@ -33,7 +38,7 @@ public class EqualityProcessor extends ClassAnnotationProcessor<Equality> {
                     .setName( "hashCode" )
                     .setReturnType( int.class )
                     .setPublic()
-                    .setBody().addReturn().invoke().staticMethod( "identityHashCode", System.class ).addArgument().thisLiteral();
+                    .setBody( newReturn().setReturn( invoke( "identityHashCode" ).setTarget( classLiteral( System.class ) ).addArgument( thisLiteral() ) ) );
         } else {
             generateEquals( source, target, descr );
             generateHashcode( source, target, descr );
@@ -46,66 +51,56 @@ public class EqualityProcessor extends ClassAnnotationProcessor<Equality> {
                 .setName( "hashCode" )
                 .setReturnType( int.class )
                 .setPublic();
-        Block<JavaClassSource,MethodSource<JavaClassSource>> body = m.setBody();
+        BlockStatement body = newBlock();
+        m.setBody( body );
 
-            body.addDeclare().setVariable( "code", int.class ).setInitExpression().literal( 1 ).noMore().done();
-
-            for ( Field field : filterFields( target ) ) {
-                ExpressionFactory<JavaClassSource, ? extends Argument<JavaClassSource,AssignStatement<JavaClassSource,Block<JavaClassSource,MethodSource<JavaClassSource>>>>>
-                        factory = body.addAssign()
-                        .setVariableLeftExpression( "code" )
-                        .setRightExpression().operator( "+" ).addArgument()
-                            .operator( "*" ).addArgument().
-                                literal( 31 ).nextArgument()
-                                .variableRef( "result" )
-                            .noMore().nextArgument();  // ....
+        body.addStatement( newDeclare().setVariable( int.class, "code" ).setInitExpression( literal( 1 ) ) );
+        OperatorExpression factory;
+        for ( Field field : filterFields( target ) ) {
+                body.addStatement( newAssign().setLeft( var( "code" ) ).setRight(
+                        factory = operator( "+" )
+                                .addArgument( operator( "*" ).addArgument( literal( 31 ) ).addArgument( var( "result" ) ) )
+                ) );
 
                 if ( "boolean".equals( field.getType().getName() ) ) {
-                    factory.ternary()
-                            .setCondition().field( field.getName() ).noMore()
-                            .setIfExpression().literal( 1231 ).noMore()
-                            .setElseExpression().literal( 1237 );
+                    factory.addArgument( ternary()
+                                                 .setCondition( field( field.getName() ) )
+                                                 .setIfExpression( literal( 1231 ) )
+                                                 .setElseExpression( literal( 1237 ) ) );
                 } else if ( "long".equals( field.getType().getName() ) ) {
-                    factory.cast( int.class )
-                            .operator( "^" ).addArgument()
-                                .field( field.getName() ).nextArgument()
-                                .operator( ">>>" ).addArgument()
-                                    .field( field.getName() ).nextArgument()
-                                    .literal( 32 );
+                    factory.addArgument( cast( int.class )
+                            .operator( "^" ).addArgument( field( field.getName() ) )
+                                            .addArgument( operator( ">>>" ).addArgument( field( field.getName() ) ).addArgument( literal( 32 ) ) ) );
                     // attr_hash ::== (int) (longAttr ^ (longAttr >>> 32))
                 } else if ( "float".equals( field.getType().getName() ) ) {
-                    factory.invoke().staticMethod( "floatToIntBits", Float.class ).addArgument().field( field.getName() );
+                    factory.addArgument( invoke( "floatToIntBits" ).setTarget( classLiteral( Float.class ) ).addArgument( field( field.getName() ) ) );
                     // attr_hash ::== Float.floatToIntBits( floatAttr );
                 } else if ( "double".equals( field.getType().getName() ) ) {
-                    factory.cast( int.class )
-                        .operator( "^" ).addArgument()
-                            .invoke().staticMethod( "doubleToLongBits", Double.class ).addArgument().field( field.getName() ).noMore().nextArgument()
-                            .operator( ">>>" ).addArgument()
-                                .invoke().staticMethod( "doubleToLongBits", Double.class ).addArgument().field( field.getName() ).noMore().nextArgument()
-                                .literal( 32 );
+                    factory.addArgument( cast( int.class )
+                            .operator( "^" )
+                                .addArgument( invoke( "doubleToLongBits" ).setTarget( classLiteral( Double.class ) ).addArgument( field( field.getName() ) ) )
+                                .addArgument( operator( ">>>" )
+                                        .addArgument( invoke( "doubleToLongBits" ).setTarget( classLiteral( Double.class ) ).addArgument( field( field.getName() ) )
+                                        .addArgument( literal( 32 ) ) ) ) );
                     // attr_hash ::== (int) (Double.doubleToLongBits( doubleAttr ) ^ (Double.doubleToLongBits( doubleAttr ) >>> 32));
                 } else if ( field.getType().isArray() ) {
-                    factory.ternary()
-                            .setCondition().operator( "==" ).addArgument()
-                                .field( field.getName() ).nextArgument()
-                                .nullLiteral().noMore().noMore()
-                            .setIfExpression().zeroLiteral( int.class ).noMore()
-                            .setElseExpression().invoke()
-                                .on().classLiteral( Arrays.class ).noMore()
-                                .method( "hashCode" ).addArgument().field( field.getName() );
+                    factory.addArgument( ternary()
+                                            .setCondition( operator( "==" )
+                                                                   .addArgument( field( field.getName() ) )
+                                                                   .addArgument( nullLiteral() ) )
+                                            .setIfExpression( zeroLiteral( int.class ) )
+                                            .setElseExpression( invoke( "hashCode" ).setTarget( classLiteral( Arrays.class ) ).addArgument( field( field.getName() ) ) ) );
 
                 } else if ( ! field.getType().isPrimitive() ) {
                     // attr_hash ::== ((objAttr == null) ? 0 : objAttr.hashCode());
-                        factory.ternary()
-                            .setCondition().operator( "==" ).addArgument()
-                                .field( field.getName() ).nextArgument()
-                                .nullLiteral().noMore().noMore()
-                            .setIfExpression().zeroLiteral( int.class ).noMore()
-                            .setElseExpression().invoke()
-                                    .on().field( field.getName() ).noMore()
-                                    .method( "hashCode" );
+                        factory.addArgument( ternary()
+                                            .setCondition( operator( "==" )
+                                                                   .addArgument( field( field.getName() ) )
+                                                                   .addArgument( nullLiteral() ) )
+                            .setIfExpression( zeroLiteral( int.class ) )
+                            .setElseExpression( invoke( "hashCode" ).setTarget( field( field.getName() ) ) ) );
                 } else {
-                    factory.field( field.getName() );
+                    factory.addArgument( field( field.getName() ) );
                 }
 
             }
@@ -120,187 +115,55 @@ public class EqualityProcessor extends ClassAnnotationProcessor<Equality> {
                 .setReturnType( boolean.class )
                 .setPublic();
         m.addParameter( Object.class, "obj" );
-        Block<JavaClassSource,MethodSource<JavaClassSource>> body = m.setBody();
+        BlockStatement body = newBlock();
+        m.setBody( body );
 
         // if ( this == obj ) return true;
-        body.addIf().setCondition().operator( "==" ).addArgument().thisLiteral().nextArgument().variableRef( "obj" ).noMore().noMore()
-                .setThenBlock().addReturn().trueLiteral();
+        body.addStatement( newIf().setCondition( operator( "==" ).addArgument( thisLiteral() ).addArgument( var( "obj" ) ) )
+                                    .setThen( newReturn().setReturn( literal( true ) ) ) );
 
         // if ( obj == null ) return false;
-        body.addIf().setCondition().operator( "==" ).addArgument().nullLiteral().nextArgument().variableRef( "obj" ).noMore().noMore()
-                .setThenBlock().addReturn().falseLiteral();
+        body.addStatement( newIf().setCondition( operator( "==" ).addArgument( thisLiteral() ).addArgument( var( "obj" ) ) )
+                                   .setThen( newReturn().setReturn( literal( false ) ) ) );
 
         // if ( getClass() != obj.getClass() ) return false;
-        body.addIf().setCondition().operator( "!=" ).addArgument()
-                    .invoke().method( "getClass" ).nextArgument()
-                    .invoke().on().variableRef( "obj" ).noMore().method( "getClass" ).noMore().noMore()
-                .setThenBlock().addReturn().trueLiteral();
+        body.addStatement( newIf().setCondition( operator( "!=" )
+                                                         .addArgument( invoke( "getClass" ) )
+                                                         .addArgument( invoke( "getClass" ).setTarget( var( "obj" ) ) ) )
+                                  .setThen( newReturn().setReturn( literal( true ) ) ) );
 
         // final <classname> other = (<classname>) obj;
-        body.addDeclare().setVariable( "other", target.getName() )
-                .setInitExpression().cast( target.getName() ).variableRef( "obj" );
+        body.addStatement( newDeclare().setVariable( target.getName(), "other" ).setInitExpression( cast( target.getName() ).var( "obj" ) ) );
 
         for ( Field field : filterFields( target ) ) {
             if ( field.getType().isPrimitive() && field.getType().getArrayDimensions() == 0 ) {
                 // if <attr> != obj.<attr> return false;
-                    body.addIf().setCondition().operator( "!=" ).addArgument()
-                            .field( field.getName() ).nextArgument()
-                            .variableRef( "obj" ).dot().field( field.getName() ).noMore().noMore()
-                        .setThenBlock().addReturn().falseLiteral();
+                    body.addStatement( newIf().setCondition( operator( "!=" )
+                                                                     .addArgument( field( field.getName() ) )
+                                                                     .addArgument( var( "obj" ).field( field.getName() ) ) )
+                                               .setThen( newReturn().setReturn( literal( false ) ) ) );
             } else if ( field.getType().getArrayDimensions() > 0 ) {
                     // if ( ! Arrays.equals( this.<attr>, obj.<attr> ) ) return false;
-                    body.addIf().setCondition().not().invoke()
-                            .on().classLiteral( Arrays.class ).noMore()
-                            .method( "equals" )
-                            .addArgument().field( field.getName() )
-                                .nextArgument().variableRef( "obj" ).dot().field( field.getName() ).noMore().noMore()
-                        .setThenBlock().addReturn().falseLiteral();
+                    body.addStatement( newIf().setCondition( not().invoke( "equals" )
+                                                                     .setTarget( classLiteral( Arrays.class ) )
+                                                                     .addArgument( field( field.getName() ) )
+                                                                     .addArgument( var( "bj" ).field( field.getName() ) ) )
+                                               .setThen( newReturn().setReturn( literal( false ) ) ) );
             } else {
                 // if ( this.<attr> == null && other.<attr> != null ||
                 //      this.<attr> != null && ! this.<attr>.equals( other.<attr> ) ) return false;
-                    body.addIf().setCondition().operator( "||" ).addArgument()
-                            .operator( "&&" ).addArgument()
-                                .operator( "==" ).addArgument().field( field.getName() ).nextArgument().nullLiteral().noMore()
-                                .nextArgument()
-                                .operator( "!=" ).addArgument().variableRef( "obj" ).dot().field( field.getName() ).nextArgument().nullLiteral().noMore()
-                                .noMore()
-                            .nextArgument()
-                            .operator( "&&" ).addArgument()
-                                .operator( "!=" ).addArgument().field( field.getName() ).nextArgument().nullLiteral().noMore()
-                                .nextArgument()
-                                .not().invoke()
-                                        .on().field( field.getName() ).noMore()
-                                        .method( "equals" )
-                                        .addArgument().variableRef( "obj" ).dot().field( field.getName() ).noMore().noMore()
-                                .noMore()
-                            .noMore()
-                        .setThenBlock().addReturn().falseLiteral();
+                    body.addStatement( newIf().setCondition( operator( "||" )
+                                                                     .addArgument( operator( "&&" )
+                                                                                           .addArgument( operator( "==" ).addArgument( field( field.getName() ) ).addArgument( nullLiteral() ) )
+                                                                                           .addArgument( operator( "!=" ).addArgument( var( "obj" ).field( field.getName() ) ).addArgument( nullLiteral() ) ) )
+                                                                     .addArgument( operator( "&&" )
+                                                                                           .addArgument( operator( "!=" ).addArgument( field( field.getName() ) ).addArgument( nullLiteral() ) )
+                                                                                          .addArgument( not().invoke( "equals" ).setTarget( field( field.getName() ) )
+                                                                                                                 .addArgument( var( "obj" ).field( field.getName() ) ) ) ) )
+                                               .setThen( newReturn().setReturn( literal( false ) ) ) );
             }
         }
 
-        /*
-                 // for each key field
-            int count = 0;
-            for ( FieldDefinition field : classDef.getFieldsDefinitions() ) {
-                if ( field.isKey() ) {
-                    count++;
-
-                    Label goNext = new Label();
-
-                    if ( BuildUtils.isPrimitive(field.getTypeName()) ) {
-                        // if attr is primitive
-
-                        // if ( this.<attr> != other.<booleanAttr> ) return false;
-                        mv.visitVarInsn( Opcodes.ALOAD,
-                                0 );
-
-
-                        visitFieldOrGetter(mv, classDef, field);
-
-                        mv.visitVarInsn(Opcodes.ALOAD,
-                                2);
-
-                        visitFieldOrGetter(mv, classDef, field);
-
-                        if ( field.getTypeName().equals( "long" ) ) {
-                            mv.visitInsn( Opcodes.LCMP );
-                            mv.visitJumpInsn( Opcodes.IFEQ,
-                                    goNext );
-                        } else if ( field.getTypeName().equals( "double" ) ) {
-                            mv.visitInsn( Opcodes.DCMPL );
-                            mv.visitJumpInsn( Opcodes.IFEQ,
-                                    goNext );
-                        } else if ( field.getTypeName().equals( "float" ) ) {
-                            mv.visitInsn( Opcodes.FCMPL );
-                            mv.visitJumpInsn( Opcodes.IFEQ,
-                                    goNext );
-                        } else {
-                            // boolean, byte, char, short, int
-                            mv.visitJumpInsn( Opcodes.IF_ICMPEQ,
-                                    goNext );
-                        }
-                        mv.visitInsn( Opcodes.ICONST_0 );
-                        mv.visitInsn( Opcodes.IRETURN );
-                    } else {
-                        // if attr is not a primitive
-
-                        // if ( this.<attr> == null && other.<attr> != null ||
-                        //      this.<attr> != null && ! this.<attr>.equals( other.<attr> ) ) return false;
-                        mv.visitVarInsn( Opcodes.ALOAD,
-                                0 );
-
-                        visitFieldOrGetter(mv, classDef, field);
-
-                        Label secondIfPart = new Label();
-                        mv.visitJumpInsn( Opcodes.IFNONNULL,
-                                secondIfPart );
-
-                        // if ( other.objAttr != null ) return false;
-                        mv.visitVarInsn( Opcodes.ALOAD,
-                                2 );
-
-                        visitFieldOrGetter(mv, classDef, field);
-
-                        Label returnFalse = new Label();
-                        mv.visitJumpInsn( Opcodes.IFNONNULL,
-                                returnFalse );
-
-                        mv.visitLabel( secondIfPart );
-                        mv.visitVarInsn( Opcodes.ALOAD,
-                                0 );
-
-                        visitFieldOrGetter(mv, classDef, field);
-
-                        mv.visitJumpInsn( Opcodes.IFNULL,
-                                goNext );
-
-                        mv.visitVarInsn( Opcodes.ALOAD,
-                                0 );
-
-                        visitFieldOrGetter(mv, classDef, field);
-
-                        mv.visitVarInsn( Opcodes.ALOAD,
-                                2 );
-
-                        visitFieldOrGetter(mv, classDef, field);
-
-                        if ( ! BuildUtils.isArray( field.getTypeName() ) ) {
-                            mv.visitMethodInsn( Opcodes.INVOKEVIRTUAL,
-                                    "java/lang/Object",
-                                    "equals",
-                                    "(Ljava/lang/Object;)Z" );
-                        } else {
-                            mv.visitMethodInsn( Opcodes.INVOKESTATIC,
-                                    "java/util/Arrays",
-                                    "equals",
-                                    "(" +
-                                            BuildUtils.arrayType( field.getTypeName() ) +
-                                            BuildUtils.arrayType( field.getTypeName() ) +
-                                    ")Z" );
-                        }
-                        mv.visitJumpInsn( Opcodes.IFNE,
-                                goNext );
-
-                        mv.visitLabel( returnFalse );
-                        mv.visitInsn( Opcodes.ICONST_0 );
-                        mv.visitInsn( Opcodes.IRETURN );
-                    }
-                    mv.visitLabel( goNext );
-                }
-            }
-            if ( count > 0 ) {
-                mv.visitInsn( Opcodes.ICONST_1 );
-            } else {
-                mv.visitInsn( Opcodes.ICONST_0 );
-            }
-            mv.visitInsn( Opcodes.IRETURN );
-            Label lastLabel = null;
-
-            mv.visitMaxs( 0,
-                    0 );
-            mv.visitEnd();
-        }
-        */
 
         return target;
     }

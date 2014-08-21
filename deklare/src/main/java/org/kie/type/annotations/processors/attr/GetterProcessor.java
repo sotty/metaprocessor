@@ -1,6 +1,5 @@
 package org.kie.type.annotations.processors.attr;
 
-import org.jboss.forge.roaster.model.Block;
 import org.jboss.forge.roaster.model.Field;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaEnumSource;
@@ -8,6 +7,9 @@ import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.kie.type.annotations.Getter;
 import org.kie.type.model.TypeDescriptor;
 import org.kie.type.utils.TypeHelper;
+
+import static org.jboss.forge.roaster.model.statements.Statements.*;
+import static org.jboss.forge.roaster.model.expressions.Expressions.*;
 
 public class GetterProcessor extends FieldAnnotationProcessor<Getter> {
 
@@ -20,13 +22,9 @@ public class GetterProcessor extends FieldAnnotationProcessor<Getter> {
     protected void processClassField( JavaClassSource source, JavaClassSource target, TypeDescriptor descr, Field<JavaClassSource> field ) {
         target.addMethod()
                 .setPublic()
-                .setBody()
-                    .addReturn().variable( field.getName() )
-                .closeBlock()
+                .setBody( newReturn().setReturn( field( field.getName() ) ) )
                 .setName( TypeHelper.getter( field.getName(), field.getType().getQualifiedName() ) )
                 .addParameter( TypeHelper.getTypeName( field ), field.getName() );
-
-        Block block = target.addMethod().setBody();
     }
 
     protected void processInterfaceField( JavaClassSource source, JavaInterfaceSource target, TypeDescriptor descr, Field<JavaClassSource> field ) {
